@@ -1,4 +1,4 @@
-name: Build Windows Plugin
+name: Build Cross-Platform Plugins
 
 on:
   push:
@@ -7,43 +7,238 @@ on:
     branches: [ main ]
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build-android:
+    runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1
+    - name: Setup Android NDK
+      uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: r25c
     
-    - name: List project structure for debugging
+    - name: List project structure
       run: |
         echo "=== Repository structure ==="
-        dir
-        echo "=== SoundEnginePlugin directory ==="
-        if (Test-Path "SoundEnginePlugin") { dir SoundEnginePlugin } else { echo "SoundEnginePlugin not found" }
-        echo "=== WwisePlugin directory ==="
-        if (Test-Path "WwisePlugin") { dir WwisePlugin } else { echo "WwisePlugin not found" }
-        echo "=== Looking for solution files ==="
-        dir *.sln
+        ls -la
+        echo "=== SoundEnginePlugin files ==="
+        ls -la SoundEnginePlugin/
     
-    - name: Build Authoring Plugin
+    - name: Create Android makefile
       run: |
-        msbuild "Stereo2Mono_Authoring_Windows_vc170.sln" /p:Configuration=Release /p:Platform=x64
+        # Create Android.mk for the plugin
+        mkdir -p android
+        cat > android/Android.mk << 'EOF'
+        LOCAL_PATH := $(call my-dir)
+        
+        include $(CLEAR_VARS)
+        LOCAL_MODULE := Stereo2MonoFX
+        LOCAL_SRC_FILES := \
+            ../SoundEnginePlugin/Stereo2MonoFX.cpp \
+            ../SoundEnginePlugin/Stereo2MonoFXParams.cpp \
+            ../SoundEnginePlugin/Stereo2MonoFXShared.cpp
+        
+        LOCAL_C_INCLUDES := \
+            $(LOCAL_PATH)/../SoundEnginePlugin \
+            $(LOCAL_PATH)/../
+        
+        LOCAL_CPPFLAGS := -std=c++11 -fexceptions
+        include $(BUILD_SHARED_LIBRARY)
+        EOF
+        
+        cat > android/Application.mk << 'EOF'
+        APP_ABI := arm64-v8a armeabi-v7a x86 x86_64
+        APP_PLATFORM := android-21
+        APP_STL := c++_shared
+        EOF
     
-    - name: Build Static SDK Plugin
+    - name: Build Android Plugin
       run: |
-        msbuild "Stereo2Mono_Windows_vc170_static.sln" /p:Configuration=Release /p:Platform=x64
+        cd android
+        $ANDROID_NDK_ROOT/ndk-build
     
-    - name: Build Shared SDK Plugin
-      run: |
-        msbuild "Stereo2Mono_Windows_vc170_shared.sln" /p:Configuration=Release /p:Platform=x64
-    
-    - name: Upload Windows Plugin
+    - name: Upload Android Plugin
       uses: actions/upload-artifact@v4
       with:
-        name: windows-plugin
+        name: android-plugin
         path: |
-          **/*.dll
-          **/*.lib
+          android/libs/**/*.so
+
+  build-mac:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+    
+    - name: List project structure
+      run: |
+        echo "=== Repository structure ==="
+        ls -la
+        echo "=== SoundEnginePlugin files ==="
+        ls -la SoundEnginePlugin/
+    
+    - name: Create Mac build files
+      run: |
+        # Create a simple Makefile for Mac compilation
+        cat > Makefile << 'EOF'
+        CXX = clang++
+        CXXFLAGS = -std=c++11 -fPIC -O2 -arch x86_64 -arch arm64
+        LDFLAGS = -bundle
+        
+        SOURCES = SoundEnginePlugin/Stereo2MonoFX.cpp \
+                  SoundEnginePlugin/Stereo2MonoFXParams.cpp \
+                  SoundEnginePlugin/Stereo2MonoFXShared.cpp
+        
+        TARGET = Stereo2MonoFX.bundle
+        
+        $(TARGET): $(SOURCES)
+        	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
+        
+        clean:
+        	rm -f $(TARGET)
+        EOF
+    
+    - name: Build Mac Plugin
+      run: |
+        make
+        ls -la *.bundle
+    
+    - name: Upload Mac Plugin
+      uses: actions/upload-artifact@v4
+      with:
+        name: mac-plugin
+        path: |
+          *.bundle
+
+  build-ios:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+    
+    - name: List project structure
+      run: |
+        echo "=== Repository structure ==="
+        ls -la
+        echo "=== SoundEnginePlugin files ==="
+        ls -la SoundEnginePlugin/
+    
+    - name: Create iOS build files
+      run: |
+        # Create Makefile for iOS static library compilation
+        cat > Makefile.ios << 'EOF'
+        CXX = clang++
+        CXXFLAGS = -std=c++11 -O2 -arch arm64 -isysroot $(shell xcrun --sdk iphoneos --show-sdk-path) -miphoneos-version-min=12.0
+        AR = ar
+        ARFLAGS = rcs
+        
+        SOURCES = SoundEnginePlugin/Stereo2MonoFX.cpp \
+                  SoundEnginePlugin/Stereo2MonoFXParams.cpp \
+                  SoundEnginePlugin/Stereo2MonoFXShared.cpp
+        
+        OBJECTS = $(SOURCES:.cpp=.o)
+        TARGET = libStereo2MonoFX.a
+        
+        $(TARGET): $(OBJECTS)
+        	$(AR) $(ARFLAGS) $@ $^
+        
+        %.o: %.cpp
+        	$(CXX) $(CXXFLAGS) -c $< -o $@
+        
+        clean:
+        	rm -f $(OBJECTS) $(TARGET)
+        EOF
+    
+    - name: Build iOS Plugin
+      run: |
+        make -f Makefile.ios
+        ls -la *.a
+        
+        # Verify the library
+        file libStereo2MonoFX.a
+        lipo -info libStereo2MonoFX.a
+    
+    - name: Upload iOS Plugin
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-plugin
+        path: |
+          *.a
+
+  create-release:
+    needs: [build-android, build-mac, build-ios]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v4
+    
+    - name: Create Release Package
+      run: |
+        mkdir -p release-package/Runtime/Plugins
+        
+        # Android
+        mkdir -p "release-package/Runtime/Plugins/Android/arm64-v8a/DSP"
+        mkdir -p "release-package/Runtime/Plugins/Android/armeabi-v7a/DSP"
+        mkdir -p "release-package/Runtime/Plugins/Android/x86/DSP"
+        mkdir -p "release-package/Runtime/Plugins/Android/x86_64/DSP"
+        
+        if [ -d "android-plugin/libs" ]; then
+          cp -r android-plugin/libs/* release-package/Runtime/Plugins/Android/
+        fi
+        
+        # Mac
+        mkdir -p "release-package/Runtime/Plugins/Mac/DSP"
+        if [ -f "mac-plugin/*.bundle" ]; then
+          cp mac-plugin/*.bundle release-package/Runtime/Plugins/Mac/DSP/
+        fi
+        
+        # iOS
+        mkdir -p "release-package/Runtime/Plugins/iOS/DSP"
+        if [ -f "ios-plugin/*.a" ]; then
+          cp ios-plugin/*.a release-package/Runtime/Plugins/iOS/DSP/
+        fi
+        
+        # Create instructions
+        cat > release-package/README.md << 'EOF'
+        # Stereo2Mono Plugin - Cross-Platform Build
+        
+        ## Installation:
+        
+        ### For Unity:
+        Copy the contents of Runtime/Plugins/ to your Unity project's Assets/Wwise/API/Runtime/Plugins/
+        
+        ### For Windows:
+        Use the DLL compiled locally by the developer.
+        
+        ## Platforms included:
+        - Android (arm64-v8a, armeabi-v7a, x86, x86_64)
+        - Mac (Universal Binary - Intel + Apple Silicon)
+        - iOS (ARM64 - iPhone/iPad)
+        - Windows (compile locally)
+        EOF
+        
+        tar -czf Stereo2Mono-CrossPlatform-Plugins.tar.gz release-package/
+    
+    - name: Upload Release Package
+      uses: actions/upload-artifact@v4
+      with:
+        name: cross-platform-package
+        path: |
+          Stereo2Mono-CrossPlatform-Plugins.tar.gz
+          release-package/README.md
