@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Stereo2Mono", "WwisePlugin\Stereo2Mono_Authoring_Windows_vc160.vcxproj", "{E08255F9-5826-C67E-4A3C-E691379D86A6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E5FFF0CD-C335-5816-B836-71182CFFE791} = {E5FFF0CD-C335-5816-B836-71182CFFE791}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Stereo2MonoFX", "SoundEnginePlugin\Stereo2Mono_Windows_vc160_static.vcxproj", "{E5FFF0CD-C335-5816-B836-71182CFFE791}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM64 = Debug|ARM64
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|ARM64 = Release|ARM64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E08255F9-5826-C67E-4A3C-E691379D86A6}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{E08255F9-5826-C67E-4A3C-E691379D86A6}.Debug|ARM64.Build.0 = Debug|ARM64
+		{E08255F9-5826-C67E-4A3C-E691379D86A6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E08255F9-5826-C67E-4A3C-E691379D86A6}.Debug|Win32.Build.0 = Debug|Win32
+		{E08255F9-5826-C67E-4A3C-E691379D86A6}.Debug|x64.ActiveCfg = Debug|x64
+		{E08255F9-5826-C67E-4A3C-E691379D86A6}.Debug|x64.Build.0 = Debug|x64
+		{E08255F9-5826-C67E-4A3C-E691379D86A6}.Release|ARM64.ActiveCfg = Release|ARM64
+		{E08255F9-5826-C67E-4A3C-E691379D86A6}.Release|ARM64.Build.0 = Release|ARM64
+		{E08255F9-5826-C67E-4A3C-E691379D86A6}.Release|Win32.ActiveCfg = Release|Win32
+		{E08255F9-5826-C67E-4A3C-E691379D86A6}.Release|Win32.Build.0 = Release|Win32
+		{E08255F9-5826-C67E-4A3C-E691379D86A6}.Release|x64.ActiveCfg = Release|x64
+		{E08255F9-5826-C67E-4A3C-E691379D86A6}.Release|x64.Build.0 = Release|x64
+		{E5FFF0CD-C335-5816-B836-71182CFFE791}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{E5FFF0CD-C335-5816-B836-71182CFFE791}.Debug|ARM64.Build.0 = Debug|ARM64
+		{E5FFF0CD-C335-5816-B836-71182CFFE791}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E5FFF0CD-C335-5816-B836-71182CFFE791}.Debug|Win32.Build.0 = Debug|Win32
+		{E5FFF0CD-C335-5816-B836-71182CFFE791}.Debug|x64.ActiveCfg = Debug|x64
+		{E5FFF0CD-C335-5816-B836-71182CFFE791}.Debug|x64.Build.0 = Debug|x64
+		{E5FFF0CD-C335-5816-B836-71182CFFE791}.Release|ARM64.ActiveCfg = Profile|ARM64
+		{E5FFF0CD-C335-5816-B836-71182CFFE791}.Release|ARM64.Build.0 = Profile|ARM64
+		{E5FFF0CD-C335-5816-B836-71182CFFE791}.Release|Win32.ActiveCfg = Profile|Win32
+		{E5FFF0CD-C335-5816-B836-71182CFFE791}.Release|Win32.Build.0 = Profile|Win32
+		{E5FFF0CD-C335-5816-B836-71182CFFE791}.Release|x64.ActiveCfg = Profile|x64
+		{E5FFF0CD-C335-5816-B836-71182CFFE791}.Release|x64.Build.0 = Profile|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

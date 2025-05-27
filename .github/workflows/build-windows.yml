@@ -1,0 +1,37 @@
+name: Build Windows Plugin
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+    
+    - name: List files for debugging
+      run: |
+        echo "=== Windows directory contents ==="
+        dir Windows
+        echo "=== Looking for .sln files ==="
+        dir Windows\*.sln
+    
+    - name: Build Plugin
+      run: |
+        msbuild "Windows\Stereo2Mono_Authoring_Windows_vc170.sln" /p:Configuration=Release /p:Platform=x64
+    
+    - name: Upload Windows Plugin
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-plugin
+        path: |
+          Windows\**\*.dll
+          Windows\**\*.lib

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2024 Audiokinetic Inc. -->
+<PluginModule>
+	<EffectPlugin Name="Stereo2Mono" CompanyID="64" PluginID="8030" DisplayName="Stereo to Mono">
+		<PluginInfo MenuPath="Custom">
+			<PlatformSupport>
+				<Platform Name="Any">
+					<CanBeInsertOnBusses>true</CanBeInsertOnBusses>
+					<CanBeInsertOnAudioObjects>true</CanBeInsertOnAudioObjects>
+					<CanBeRendered>true</CanBeRendered>
+				</Platform>
+			</PlatformSupport>
+		</PluginInfo>
+		<Properties>
+			<Property Name="MonoBlend" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Mono Blend" DisplayGroup="Stereo Processing">
+				<UserInterface Step="1.0" Fine="0.1" Decimals="1"/>
+				<DefaultValue>0.0</DefaultValue>
+				<AudioEnginePropertyID>0</AudioEnginePropertyID>
+				<Restrictions>
+					<ValueRestriction>
+						<Range Type="Real32">
+							<Min>0.0</Min>
+							<Max>100.0</Max>
+						</Range>
+					</ValueRestriction>
+				</Restrictions>
+			</Property>
+		</Properties>
+	</EffectPlugin>
+</PluginModule>
