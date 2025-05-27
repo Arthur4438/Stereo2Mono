@@ -17,21 +17,33 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1
     
-    - name: List files for debugging
+    - name: List project structure for debugging
       run: |
-        echo "=== Windows directory contents ==="
-        dir Windows
-        echo "=== Looking for .sln files ==="
-        dir Windows\*.sln
+        echo "=== Repository structure ==="
+        dir
+        echo "=== SoundEnginePlugin directory ==="
+        if (Test-Path "SoundEnginePlugin") { dir SoundEnginePlugin } else { echo "SoundEnginePlugin not found" }
+        echo "=== WwisePlugin directory ==="
+        if (Test-Path "WwisePlugin") { dir WwisePlugin } else { echo "WwisePlugin not found" }
+        echo "=== Looking for solution files ==="
+        dir *.sln
     
-    - name: Build Plugin
+    - name: Build Authoring Plugin
       run: |
-        msbuild "Windows\Stereo2Mono_Authoring_Windows_vc170.sln" /p:Configuration=Release /p:Platform=x64
+        msbuild "Stereo2Mono_Authoring_Windows_vc170.sln" /p:Configuration=Release /p:Platform=x64
+    
+    - name: Build Static SDK Plugin
+      run: |
+        msbuild "Stereo2Mono_Windows_vc170_static.sln" /p:Configuration=Release /p:Platform=x64
+    
+    - name: Build Shared SDK Plugin
+      run: |
+        msbuild "Stereo2Mono_Windows_vc170_shared.sln" /p:Configuration=Release /p:Platform=x64
     
     - name: Upload Windows Plugin
       uses: actions/upload-artifact@v4
       with:
         name: windows-plugin
         path: |
-          Windows\**\*.dll
-          Windows\**\*.lib
+          **/*.dll
+          **/*.lib
